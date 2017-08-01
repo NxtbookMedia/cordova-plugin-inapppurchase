@@ -122,6 +122,28 @@ inAppPurchase.restorePurchases = () => {
     });
 };
 
+
+inAppPurchase.getPurchaseHistory = () => {
+  return nativeCall('init', [])
+    .then(() => {
+      return nativeCall('getPurchaseHistory', []);
+    })
+    .then((purchaseHistory) => {
+      let arr = [];
+      if (purchaseHistory) {
+        arr = purchaseHistory.map((val) => {
+          return {
+            productId: val.productId,
+            purchaseTime: val.purchaseTime,
+            developerPayload: val.developerPayload,
+            purchaseToken: purchaseToken
+          };
+        });
+      }
+      return Promise.resolve(arr);
+    })
+};
+
 inAppPurchase.getReceipt = () => {
   return Promise.resolve('');
 };
