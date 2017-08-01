@@ -680,6 +680,9 @@ public class IabHelper {
         logDebug("Package name: " + mContext.getPackageName());
 
         String continueToken = null;
+        // Here only to satisfy getPurchaseHistory()'s signature - it is unused
+        // at present.
+        Bundle extraParams = new Bundle();
 
         do {
             logDebug("Calling getPurchaseHistory with continuation token: " + continueToken);
@@ -688,7 +691,7 @@ public class IabHelper {
             //
             // A file that is likely an updated version lives here:
             // https://github.com/googlesamples/android-play-billing/blob/master/TrivialDrive/app/src/main/aidl/com/android/vending/billing/IInAppBillingService.aidl
-            Bundle historyItems = mService.getPurchaseHistory(BILLING_API_VERSION, mContext.getPackageName(), itemType, continueToken);
+            Bundle historyItems = mService.getPurchaseHistory(BILLING_API_VERSION, mContext.getPackageName(), itemType, continueToken, extraParams);
 
             int response = getResponseCodeFromBundle(historyItems);
             logDebug("Purchase history response: " + String.valueOf(response));
@@ -707,7 +710,7 @@ public class IabHelper {
                 String purchaseData = purchaseDataList.get(i);
                 PurchaseHistoryItem item = new PurchaseHistoryItem(purchaseData);
 
-                if (TextUtils.isEmpty(purchase.getPurchaseToken())) {
+                if (TextUtils.isEmpty(item.getPurchaseToken())) {
                     logWarn("BUG: empty/null token!");
                     logDebug("Purchase data: " + purchaseData);
                 }
@@ -718,6 +721,8 @@ public class IabHelper {
             continueToken = historyItems.getString(INAPP_CONTINUATION_TOKEN);
             logDebug("Continuation token: " + continueToken);
         } while (!TextUtils.isEmpty(continueToken));
+
+        return BILLING_RESPONSE_RESULT_OK;
     }
 
     public PurchaseHistory getPurchaseHistory() throws IabException {
@@ -747,15 +752,15 @@ public class IabHelper {
         }
     }
 
-    public void getPurchaseHistoryAsync(GetPurchaseHistoryFinishedListener listener) {
+    public void getPurchaseHistoryAsync(final GetPurchaseHistoryFinishedListener listener) {
         final Handler handler = new Handler();
         checkNotDisposed();
-        checkSetupDone();
+        checkSetupDone("getPurchaseHistory");
         flagStartAsync("get purchase history");
 
         (new Thread(new Runnable() {
             public void run() {
-                IabResult result = new IabResult(BILLING_RESPONSE, "Purchase history retrieved successfully.");
+                IabResult result = new IabResult(BILLING_RESPONSE_RESULT_OK, "Purchase history retrieved successfully.");
                 PurchaseHistory history = null;
                 try {
                     history = getPurchaseHistory();

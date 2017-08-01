@@ -405,8 +405,8 @@ public class InAppBillingV3 extends CordovaPlugin {
           JSONArray response = new JSONArray();
           try {
             for (PurchaseHistoryItem item : purchaseHistory.getAllItems()) {
-              if (purchase != null) {
-                JSONOBject detailsJson = new JSONObject();
+              if (item != null) {
+                JSONObject detailsJson = new JSONObject();
                 detailsJson.put("productId", item.getProductId());
                 detailsJson.put("purchaseTime", item.getPurchaseTime());
                 detailsJson.put("developerPayload", item.getDeveloperPayload());

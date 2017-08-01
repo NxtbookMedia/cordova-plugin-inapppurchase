@@ -1,5 +1,8 @@
 package com.alexdisler.inapppurchases;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class PurchaseHistoryItem {
     String mJsonItemInfo;
     String mProductId;

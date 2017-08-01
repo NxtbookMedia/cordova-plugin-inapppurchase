@@ -1,6 +1,7 @@
 package com.alexdisler.inapppurchases;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A collection of items the user purchased in the past. May include canceled
@@ -12,10 +13,10 @@ public class PurchaseHistory {
     PurchaseHistory() { }
 
     public List<PurchaseHistoryItem> getAllItems() {
-        return mPurchasedHistoryItems;
+        return mPurchaseHistoryItems;
     }
 
-    public addItem(PurchaseHistoryItem item) {
+    public void addItem(PurchaseHistoryItem item) {
         mPurchaseHistoryItems.add(item);
     }
 }
