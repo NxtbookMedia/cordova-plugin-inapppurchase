@@ -210,6 +210,25 @@ inAppPurchase.restorePurchases = function () {
   });
 };
 
+inAppPurchase.getPurchaseHistory = function () {
+  return nativeCall('init', []).then(function () {
+    return nativeCall('getPurchaseHistory', []);
+  }).then(function (purchaseHistory) {
+    var arr = [];
+    if (purchaseHistory) {
+      arr = purchaseHistory.map(function (val) {
+        return {
+          productId: val.productId,
+          purchaseTime: val.purchaseTime,
+          developerPayload: val.developerPayload,
+          purchaseToken: purchaseToken
+        };
+      });
+    }
+    return Promise.resolve(arr);
+  });
+};
+
 inAppPurchase.getReceipt = function () {
   return Promise.resolve('');
 };
