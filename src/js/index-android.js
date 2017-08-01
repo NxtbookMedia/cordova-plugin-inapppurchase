@@ -124,11 +124,13 @@ inAppPurchase.restorePurchases = () => {
 
 
 inAppPurchase.getPurchaseHistory = () => {
+  console.log('About to try native call...');
   return nativeCall('init', [])
     .then(() => {
       return nativeCall('getPurchaseHistory', []);
     })
     .then((purchaseHistory) => {
+      console.log('We got some purchase history!!!', purchaseHistory);
       let arr = [];
       if (purchaseHistory) {
         arr = purchaseHistory.map((val) => {
@@ -142,6 +144,9 @@ inAppPurchase.getPurchaseHistory = () => {
       }
       return Promise.resolve(arr);
     })
+    .catch((err) => {
+      console.log('Error trying to get purchase history: ', err);
+    });
 };
 
 inAppPurchase.getReceipt = () => {

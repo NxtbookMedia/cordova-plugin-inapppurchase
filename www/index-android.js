@@ -211,9 +211,11 @@ inAppPurchase.restorePurchases = function () {
 };
 
 inAppPurchase.getPurchaseHistory = function () {
+  console.log('About to try native call...');
   return nativeCall('init', []).then(function () {
     return nativeCall('getPurchaseHistory', []);
   }).then(function (purchaseHistory) {
+    console.log('We got some purchase history!!!', purchaseHistory);
     var arr = [];
     if (purchaseHistory) {
       arr = purchaseHistory.map(function (val) {
@@ -226,6 +228,8 @@ inAppPurchase.getPurchaseHistory = function () {
       });
     }
     return Promise.resolve(arr);
+  }).catch(function (err) {
+    console.log('Error trying to get purchase history: ', err);
   });
 };
 
