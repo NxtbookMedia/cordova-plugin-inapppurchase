@@ -656,6 +656,38 @@ public class IabHelper {
         queryInventoryAsync(querySkuDetails, null, listener);
     }
 
+    public void getPurchaseHistoryAsync(GetPurchaseHistoryFinishedListener listener) {
+        final Handler handler = new Handler();
+        checkNotDisposed();
+        checkSetupDone();
+        flagStartAsync("get purchase history");
+
+        (new Thread(new Runnable() {
+            public void run() {
+                IabResult result = new IabResult(BILLING_RESPONSE, "Purchase history retrieved successfully.");
+                PurchaseHistory history = null;
+                try {
+                    history = getPurchaseHistory();
+                }
+                catch (IabException ex) {
+                    result = ex.getResult();
+                }
+
+                flagEndAsync();
+
+                final IabResult result_f = result;
+                final PurchaseHistory history_f = history;
+                if (!mDisposed && listener != null) {
+                    handler.post(new Runnable() {
+                        public void run() {
+                            listener.onGetPurchaseHistoryFinished(result_f, history_f);
+                        }
+                    });
+                }
+            }
+         })).start();
+    }
+
 
     /**
      * Consumes a given in-app product. Consuming can only be done on an item
