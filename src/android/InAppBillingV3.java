@@ -170,6 +170,8 @@ public class InAppBillingV3 extends CordovaPlugin {
       return getSkuDetails(args, callbackContext);
     } else if ("restorePurchases".equals(action)) {
       return restorePurchases(args, callbackContext);
+    } else if ("getPurchaseHistory".equals(action)) {
+      return getPurchaseHistory(args, callbackContext);
     }
     return false;
   }
@@ -374,6 +376,41 @@ public class InAppBillingV3 extends CordovaPlugin {
                 detailsJson.put("signature", purchase.getSignature());
                 detailsJson.put("type", purchase.getItemType());
                 detailsJson.put("receipt", purchase.getOriginalJson());
+                response.put(detailsJson);
+              }
+            }
+          } catch (JSONException e) {
+            callbackContext.error(e.getMessage());
+          }
+          callbackContext.success(response);
+        }
+      });
+    }
+    return true;
+  }
+
+  protected boolean getPurchaseHistory(final JSONArray args, final CallbackContext callbackContext) {
+    if (iabHelper == null || !billingInitialized) {
+      callbackContext.error(makeError("Billing is not initialized", BILLING_NOT_INITIALIZED));
+    } else {
+      // FIXME Put this code somewhere other than the Google IabHelper class.
+      //
+      // Increasing a fork's deviation from upstream makes maintenance harder.
+      iabHelper.getPurchaseHistoryAsync(new IabHelper.GetPurchaseHistoryFinishedListener() {
+        public void onGetPurchaseHistoryFinished(IabResult result, PurchaseHistory purchaseHistory) {
+          if (result.isFailure()) {
+            callbackContext.error("Error retrieving purchase history");
+            return;
+          }
+          JSONArray response = new JSONArray();
+          try {
+            for (PurchaseHistoryItem item : purchaseHistory.getAllItems()) {
+              if (purchase != null) {
+                JSONOBject detailsJson = new JSONObject();
+                detailsJson.put("productId", item.getProductId());
+                detailsJson.put("purchaseTime", item.getPurchaseTime());
+                detailsJson.put("developerPayload", item.getDeveloperPayload());
+                detailsJson.put("purchaseToken", item.getPurchaseToken());
                 response.put(detailsJson);
               }
             }
