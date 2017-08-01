@@ -112,6 +112,12 @@ public class IabHelper {
     // Public key for verifying signature, in base64 encoding
     String mSignatureBase64 = null;
 
+    // FIXME Figure out whether 6 is actually the right value.
+    //
+    // I just picked that because the latest version of the AIDL file I found
+    // said that it should be at least version 6.
+    public static final int BILLING_API_VERSION = 6;
+
     // Billing response codes
     public static final int BILLING_RESPONSE_RESULT_OK = 0;
     public static final int BILLING_RESPONSE_RESULT_USER_CANCELED = 1;
@@ -667,6 +673,78 @@ public class IabHelper {
 
     public void queryInventoryAsync(boolean querySkuDetails, QueryInventoryFinishedListener listener) {
         queryInventoryAsync(querySkuDetails, null, listener);
+    }
+
+    int queryPurchaseHistory(PurchaseHistory history, String itemType) throws JSONException, RemoteException {
+        logDebug("Retrieving purchase history");
+        logDebug("Package name: " + mContext.getPackageName());
+
+        String continueToken = null;
+
+        do {
+            logDebug("Calling getPurchaseHistory with continuation token: " + continueToken);
+            // FIXME This method is not in the aidl document. I suspect that
+            // will lead to explosions when I actually try to test it.
+            //
+            // A file that is likely an updated version lives here:
+            // https://github.com/googlesamples/android-play-billing/blob/master/TrivialDrive/app/src/main/aidl/com/android/vending/billing/IInAppBillingService.aidl
+            Bundle historyItems = mService.getPurchaseHistory(BILLING_API_VERSION, mContext.getPackageName(), itemType, continueToken);
+
+            int response = getResponseCodeFromBundle(historyItems);
+            logDebug("Purchase history response: " + String.valueOf(response));
+            if (response != BILLING_RESPONSE_RESULT_OK) {
+                logDebug("getPurchaseHistory() failed" + getResponseDesc(response));
+            }
+            if (!historyItems.containsKey(RESPONSE_INAPP_ITEM_LIST)
+                || !historyItems.containsKey(RESPONSE_INAPP_PURCHASE_DATA_LIST)
+                || !historyItems.containsKey(RESPONSE_INAPP_SIGNATURE_LIST)) {
+                return IABHELPER_BAD_RESPONSE;
+            }
+
+            ArrayList<String> purchaseDataList = historyItems.getStringArrayList(RESPONSE_INAPP_PURCHASE_DATA_LIST);
+
+            for (int i = 0; i < purchaseDataList.size(); ++i) {
+                String purchaseData = purchaseDataList.get(i);
+                PurchaseHistoryItem item = new PurchaseHistoryItem(purchaseData);
+
+                if (TextUtils.isEmpty(purchase.getPurchaseToken())) {
+                    logWarn("BUG: empty/null token!");
+                    logDebug("Purchase data: " + purchaseData);
+                }
+
+                history.addItem(item);
+            }
+
+            continueToken = historyItems.getString(INAPP_CONTINUATION_TOKEN);
+            logDebug("Continuation token: " + continueToken);
+        } while (!TextUtils.isEmpty(continueToken));
+    }
+
+    public PurchaseHistory getPurchaseHistory() throws IabException {
+        checkNotDisposed();
+        checkSetupDone("getPurchaseHistory");
+        try {
+            PurchaseHistory history = new PurchaseHistory();
+            int r = queryPurchaseHistory(history, ITEM_TYPE_INAPP);
+            if (r != BILLING_RESPONSE_RESULT_OK) {
+                throw new IabException(r, "Error fetching item purchase history.");
+            }
+
+            if (mSubscriptionsSupported) {
+                r = queryPurchaseHistory(history, ITEM_TYPE_SUBS);
+                if (r != BILLING_RESPONSE_RESULT_OK) {
+                    throw new IabException(r, "Error getting subscription purchase history.");
+                }
+            }
+
+            return history;
+        }
+        catch (RemoteException e) {
+            throw new IabException(IABHELPER_REMOTE_EXCEPTION, "Remote exception while getting purchase history.", e);
+        }
+        catch (JSONException e) {
+            throw new IabException(IABHELPER_BAD_RESPONSE, "Error parsing JSON response while getting purchase history.", e);
+        }
     }
 
     public void getPurchaseHistoryAsync(GetPurchaseHistoryFinishedListener listener) {
