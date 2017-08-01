@@ -604,6 +604,19 @@ public class IabHelper {
         public void onQueryInventoryFinished(IabResult result, Inventory inv);
     }
 
+    /**
+     * Listener that notifies when a purchase history fetch completes.
+     */
+    public interface GetPurchaseHistoryFinishedListener {
+        /**
+         * Called to notify that a purchase history fetch completed.
+         *
+         * @param result The result of the operation.
+         * @param history The purchase history object.
+         */
+        public void onGetPurchaseHistoryFinished(IabResult result, PurchaseHistory history);
+    }
+
 
     /**
      * Asynchronous wrapper for inventory query. This will perform an inventory
