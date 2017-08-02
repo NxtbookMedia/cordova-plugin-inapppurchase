@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A collection of items the user purchased in the past. May include canceled
+ * A collection of past purchases made by the current user, including canceled
  * and refunded items.
  */
 public class PurchaseHistory {

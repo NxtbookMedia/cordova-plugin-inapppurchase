@@ -122,7 +122,6 @@ inAppPurchase.restorePurchases = () => {
     });
 };
 
-
 inAppPurchase.getPurchaseHistory = () => {
   return nativeCall('init', [])
     .then(() => {

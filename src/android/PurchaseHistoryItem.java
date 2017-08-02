@@ -3,6 +3,10 @@ package com.alexdisler.inapppurchases;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Metadata from the Play Store API about a past purchase (which the user may
+ * no longer have access to).
+ */
 public class PurchaseHistoryItem {
     String mJsonItemInfo;
     String mProductId;

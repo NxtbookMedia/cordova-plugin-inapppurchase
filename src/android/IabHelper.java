@@ -605,20 +605,6 @@ public class IabHelper {
     }
 
     /**
-     * Listener that notifies when a purchase history fetch completes.
-     */
-    public interface GetPurchaseHistoryFinishedListener {
-        /**
-         * Called to notify that a purchase history fetch completed.
-         *
-         * @param result The result of the operation.
-         * @param history The purchase history object.
-         */
-        public void onGetPurchaseHistoryFinished(IabResult result, PurchaseHistory history);
-    }
-
-
-    /**
      * Asynchronous wrapper for inventory query. This will perform an inventory
      * query as described in {@link #queryInventory}, but will do so asynchronously
      * and call back the specified listener upon completion. This method is safe to
@@ -669,6 +655,22 @@ public class IabHelper {
         queryInventoryAsync(querySkuDetails, null, listener);
     }
 
+    /**
+     * Listener that notifies when a purchase history fetch completes.
+     */
+    public interface GetPurchaseHistoryFinishedListener {
+        /**
+         * Called to notify that a purchase history fetch completed.
+         *
+         * @param result The result of the operation.
+         * @param history The purchase history object.
+         */
+        public void onGetPurchaseHistoryFinished(IabResult result, PurchaseHistory history);
+    }
+
+    /**
+     *
+     */
     int queryPurchaseHistory(PurchaseHistory history, String itemType) throws JSONException, RemoteException {
         logDebug("Retrieving purchase history");
         logDebug("Package name: " + mContext.getPackageName());
@@ -748,6 +750,18 @@ public class IabHelper {
         return BILLING_RESPONSE_RESULT_OK;
     }
 
+    /**
+     * Returns the current user's purchase history. The purchase history offers
+     * a record of the most recent purchase for every SKU the user has ever
+     * purchased, even if the purchase has been refunded, expired, or the
+     * product has been consumed. Includes both regular products and
+     * subscriptions.
+     *
+     * This method may block or take long to execute. Do not call from a UI
+     * thread. For that, use the non-blocking version {@link #getPurchaseHistoryAsync}.
+     *
+     * @return PurchaseHistory
+     */
     public PurchaseHistory getPurchaseHistory() throws IabException {
         checkNotDisposed();
         checkSetupDone("getPurchaseHistory");
@@ -775,6 +789,16 @@ public class IabHelper {
         }
     }
 
+    /**
+     * Asynchronous method for fetching purchase history. Just a simple
+     * asynchronous wrapper around {@link #getPurchaseHistory} that calls the
+     * specified listener on completion.
+     *
+     * This method is safe to call from a UI thread.
+     *
+     * @param listener The listener to notify when the purchase history has
+     * been retrieved.
+     */
     public void getPurchaseHistoryAsync(final GetPurchaseHistoryFinishedListener listener) {
         final Handler handler = new Handler();
         checkNotDisposed();

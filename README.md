@@ -193,11 +193,32 @@ inAppPurchase
 
 See [Differences Between Product Types](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Products.html)
 
+### Get Purchase History
+
+#### inAppPurchases.getPurchaseHistory()
+
+Use this to get the most recent Play Store purchase for every SKU the user has
+ever purchased, regardless of whether they still own it.
+
+On success, the promise resolves to an array of objects with the following
+attributes:
+
+- ```productId``` The purchased product's app-specific ID.
+- ```purchaseTime``` The time the purchase was made, in milliseconds since the
+  Unix epoch.
+- ```developerPayload``` The optional developer-defined payload submitted with
+  the original purchase.
+- ```purchaseToken``` The token that ties this purchase to a specific
+  product/user pair.
+
 ### Get Receipt
 
 #### inAppPurchase.getReceipt()
 
-On ***iOS***, you can get the receipt at any moment by calling the getReceipt() function. Note that on iOS the receipt can contain multiple transactions. If successful, the promise returned by this function will resolve to a string with the receipt.
+On ***iOS***, you can get the receipt at any moment by calling the getReceipt()
+function. Note that on iOS the receipt can contain multiple transactions. If
+successful, the promise returned by this function will resolve to a string with
+the receipt.
 
 On ***Android*** this function will always return an empty string since it's not needed for Android purchases.
 
