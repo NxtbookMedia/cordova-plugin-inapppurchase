@@ -112,12 +112,6 @@ public class IabHelper {
     // Public key for verifying signature, in base64 encoding
     String mSignatureBase64 = null;
 
-    // FIXME Figure out whether 6 is actually the right value.
-    //
-    // I just picked that because the latest version of the AIDL file I found
-    // said that it should be at least version 6.
-    public static final int BILLING_API_VERSION = 6;
-
     // Billing response codes
     public static final int BILLING_RESPONSE_RESULT_OK = 0;
     public static final int BILLING_RESPONSE_RESULT_USER_CANCELED = 1;
@@ -684,6 +678,35 @@ public class IabHelper {
         // at present.
         Bundle extraParams = new Bundle();
 
+        // If the current device does not support the getPurchaseHistory()
+        // method, which is only available in version 6 and greater of the
+        // Play billing API per the docs, return the history object unmodified.
+        //
+        // Most devices should, due to auto-updates - this is just being
+        // careful in case we're on a device that's not receiving auto-updates.
+        //
+        // See following links for context:
+        // https://developer.android.com/google/play/billing/billing_reference.html#getPurchaseHistory
+        // https://developer.android.com/google/play/billing/versions.html
+        int requiredVersion = 6;
+        String packageName = mContext.getPackageName();
+        int response = mService.isBillingSupported(requiredVersion, packageName, itemType);
+        if (response != BILLING_RESPONSE_RESULT_OK) {
+            logDebug("Purchase history not supported on this device.");
+
+            // FIXME Stop calling this a 'successful' result.
+            //
+            // As it stands, there's no way to tell the difference between "You
+            // have never purchased anything" and "There is no support for
+            // getting purchase history", since this return statement will just
+            // result in callers getting an empty purchase history.
+            //
+            // This works for now, since for our projects we just want to not
+            // die on out-of-date devices, but it isn't a suitable solution for
+            // upstream, if we're thinking about long-term maintainability.
+            return BILLING_RESPONSE_RESULT_OK;
+        }
+
         do {
             logDebug("Calling getPurchaseHistory with continuation token: " + continueToken);
             // FIXME This method is not in the aidl document. I suspect that
@@ -691,9 +714,9 @@ public class IabHelper {
             //
             // A file that is likely an updated version lives here:
             // https://github.com/googlesamples/android-play-billing/blob/master/TrivialDrive/app/src/main/aidl/com/android/vending/billing/IInAppBillingService.aidl
-            Bundle historyItems = mService.getPurchaseHistory(BILLING_API_VERSION, mContext.getPackageName(), itemType, continueToken, extraParams);
+            Bundle historyItems = mService.getPurchaseHistory(requiredVersion, mContext.getPackageName(), itemType, continueToken, extraParams);
 
-            int response = getResponseCodeFromBundle(historyItems);
+            response = getResponseCodeFromBundle(historyItems);
             logDebug("Purchase history response: " + String.valueOf(response));
             if (response != BILLING_RESPONSE_RESULT_OK) {
                 logDebug("getPurchaseHistory() failed" + getResponseDesc(response));
