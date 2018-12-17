@@ -117,6 +117,7 @@ var chunkedGetSkuDetails = function chunkedGetSkuDetails(productIds) {
   // We need to chunk the getSkuDetails call cause it is only allowed to provide a maximum of 20 items per call
   return utils.chunk(productIds, 19).reduce(function (promise, productIds) {
     return promise.then(function (result) {
+      console.log('calling getSkuDetails() for ' + productIds.length + '' + '' + ' products', productIds);
       return nativeCall('getSkuDetails', productIds).then(function (items) {
         return result.concat(items);
       });
