@@ -114,6 +114,8 @@ var nativeCall = function nativeCall(name) {
 };
 
 var chunkedGetSkuDetails = function chunkedGetSkuDetails(productIds) {
+  return Promise.resolve(productIds.slice(0, 19));
+
   // We need to chunk the getSkuDetails call cause it is only allowed to provide a maximum of 20 items per call
   return utils.chunk(productIds, 19).reduce(function (promise, productIds) {
     return promise.then(function (result) {
