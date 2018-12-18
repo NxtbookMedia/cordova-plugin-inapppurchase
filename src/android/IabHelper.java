@@ -1089,9 +1089,9 @@ public class IabHelper {
         logDebug("Querying SKU details.");
         ArrayList<String> skuList = new ArrayList<String>();
         skuList.addAll(inv.getAllOwnedSkus(itemType));
-        logDebug("Number of owned SKUs: " + Integer.toString(skuList.size()));
+        logWarn("Number of owned SKUs: " + Integer.toString(skuList.size()));
         if (moreSkus != null) {
-            logDebug("Number of additional SKUs: " + Integer.toString(moreSkus.size()));
+            logWarn("Number of additional SKUs: " + Integer.toString(moreSkus.size()));
             for (String sku : moreSkus) {
                 if (!skuList.contains(sku)) {
                     skuList.add(sku);
@@ -1099,7 +1099,7 @@ public class IabHelper {
             }
         }
 
-        logDebug("Total number of SKUs: " + Integer.toString(skuList.size()));
+        logWarn("Total number of SKUs: " + Integer.toString(skuList.size()));
 
         if (skuList.size() == 0) {
             logDebug("queryPrices: nothing to do because there are no SKUs.");
