@@ -116,22 +116,38 @@
   }];
 }
 
-- (void)getReceipt:(CDVInvokedUrlCommand *)command {
+- (void) loadReceipt:(CDVInvokedUrlCommand *)command {
+  // TODO Merge this success block with refreshReceipt()'s somehow. They're the
+  // same and the redundancy is ugly. If I knew Objective-C well I'd just do it
+  // but I'm trying to keep my changes minimal to reduce risk, as it's a
+  // language I've touched only rarely.
+  [self.commandDelegate runInBackground:^{
+   NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
+   NSData *receiptData = [NSData dataWithContentsOfURL:receiptURL];
+   NSString *encReceipt = [receiptData base64EncodedStringWithOptions:0];
+
+   CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:@{@"receipt": NILABLE(encReceipt) }];
+   [pluginResult setKeepCallbackAsBool:YES];
+   [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
+}
+
+- (void) refreshReceipt:(CDVInvokedUrlCommand *)command {
   [[RMStore defaultStore] refreshReceiptOnSuccess:^{
     NSURL *receiptURL = [[NSBundle mainBundle] appStoreReceiptURL];
     NSData *receiptData = [NSData dataWithContentsOfURL:receiptURL];
     NSString *encReceipt = [receiptData base64EncodedStringWithOptions:0];
+
     CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:@{@"receipt": NILABLE(encReceipt) }];
     [pluginResult setKeepCallbackAsBool:YES];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-  } failure:^(NSError *error) {
-    CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:@{
-                                                                                                                   @"errorCode": NILABLE([NSNumber numberWithInteger:error.code]),
-                                                                                                                   @"errorMessage": NILABLE(error.localizedDescription)
-                                                                                                                   }];
-    [pluginResult setKeepCallbackAsBool:YES];
-    [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
-  }];
+    } failure:^(NSError *error) {
+      CDVPluginResult *pluginResult = [CDVPluginResult resultWithStatus:CDVCommandStatus_ERROR messageAsDictionary:@{
+          @"errorCode": NILABLE([NSNumber numberWithInteger:error.code]),
+          @"errorMessage": NILABLE(error.localizedDescription)}];
+      [pluginResult setKeepCallbackAsBool:YES];
+      [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
+    }];
 }
 
 @end

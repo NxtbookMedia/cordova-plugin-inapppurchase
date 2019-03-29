@@ -125,14 +125,30 @@ inAppPurchase.consume = function () {
   return Promise.resolve();
 };
 
-inAppPurchase.getReceipt = function () {
-  return nativeCall('getReceipt').then(function (res) {
+inAppPurchase.loadReceipt = function () {
+  return nativeCall('loadReceipt').then(function (res) {
     var receipt = '';
     if (res && res.receipt) {
       receipt = res.receipt;
     }
     return receipt;
   });
+};
+
+inAppPurchase.refreshReceipt = function () {
+  return nativeCall('refreshReceipt').then(function (res) {
+    var receipt = '';
+    if (res && res.receipt) {
+      receipt = res.receipt;
+    }
+    return receipt;
+  });
+};
+
+inAppPurchase.getReceipt = function () {
+  console.warn('This method is deprecated in favor of refreshReceipt().');
+
+  inAppPurchase.refreshReceipt();
 };
 
 inAppPurchase.restorePurchases = function () {

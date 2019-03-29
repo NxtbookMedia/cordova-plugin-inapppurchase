@@ -76,14 +76,30 @@ inAppPurchase.consume = () => {
   return Promise.resolve();
 };
 
-inAppPurchase.getReceipt = () => {
-  return nativeCall('getReceipt').then((res) => {
+inAppPurchase.loadReceipt = () => {
+  return nativeCall('loadReceipt').then((res) => {
     let receipt = '';
     if (res && res.receipt) {
       receipt = res.receipt;
     }
     return receipt;
   });
+}
+
+inAppPurchase.refreshReceipt = () => {
+  return nativeCall('refreshReceipt').then((res) => {
+    let receipt = '';
+    if (res && res.receipt) {
+      receipt = res.receipt;
+    }
+    return receipt;
+  });
+};
+
+inAppPurchase.getReceipt = () => {
+  console.warn('This method is deprecated in favor of refreshReceipt().');
+
+  inAppPurchase.refreshReceipt();
 };
 
 inAppPurchase.restorePurchases = () => {

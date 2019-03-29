@@ -193,12 +193,19 @@ inAppPurchase
 
 See [Differences Between Product Types](https://developer.apple.com/library/ios/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Products.html)
 
+Note that [on iOS most apps should use `loadReceipt()` rather than
+`restorePurchases()`](https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html#//apple_ref/doc/uid/TP40008267-CH8-SW9)
+in order to restore purchases.
+
 ### Get Purchase History
 
 #### inAppPurchases.getPurchaseHistory()
 
 Use this to get the most recent Play Store purchase for every SKU the user has
 ever purchased, regardless of whether they still own it.
+
+There is no equivalent method for iOS, since the purchase receipt contains all
+past purchases including expired subscriptions.
 
 On success, the promise resolves to an array of objects with the following
 attributes:
@@ -211,14 +218,44 @@ attributes:
 - ```purchaseToken``` The token that ties this purchase to a specific
   product/user pair.
 
-### Get Receipt
+### Load And Refresh Receipt (iOS)
 
-#### inAppPurchase.getReceipt()
+On ***iOS***, the purchase receipt is [the standard data structure for
+verifying and restoring user
+purchases](https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html#//apple_ref/doc/uid/TP40008267-CH8-SW9).
 
-On ***iOS***, you can get the receipt at any moment by calling the getReceipt()
-function. Note that on iOS the receipt can contain multiple transactions. If
-successful, the promise returned by this function will resolve to a string with
-the receipt.
+This plugin offers a few methods for working with it.
+
+#### inAppPurchase.loadReceipt()
+
+Returns a promise to load the local copy of the purchase receipt.
+
+The promise resolves with an encoded string representing the receipt, suitable
+for use in [validating user
+purchases](https://developer.apple.com/library/archive/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateRemotely.html#//apple_ref/doc/uid/TP40010573-CH104-SW1).
+If no receipt exists it resolves with an empty string.
+
+This is the [standard way to get a user's purchases on
+iOS](https://developer.apple.com/library/archive/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateRemotely.html#//apple_ref/doc/uid/TP40010573-CH104-SW2)
+and is what you should use by default for loading a user's purchases.
+
+
+#### inAppPurchase.refreshReceipt()
+
+Returns a promise to refresh the purchase receipt from the iTunes Store.
+
+This forces users to authenticate to the App Store, so per Apple's docs it
+should be done [only when users restore
+purchases](https://developer.apple.com/library/archive/documentation/NetworkingInternet/Conceptual/StoreKitGuide/Chapters/Restoring.html#//apple_ref/doc/uid/TP40008267-CH8-SW9).
+
+The promise resolves with an encoded string representing the receipt, suitable
+for use in [validating user
+purchases](https://developer.apple.com/library/archive/releasenotes/General/ValidateAppStoreReceipt/Chapters/ValidateRemotely.html#//apple_ref/doc/uid/TP40010573-CH104-SW1).
+If no receipt exists it resolves with an empty string.
+
+For backwards compatibility, `inAppPurchase.getReceipt()` is aliased to this
+method, but that alias is deprecated due to its ambiguity.
+
 
 On ***Android*** this function will always return an empty string since it's not needed for Android purchases.
 
@@ -241,6 +278,8 @@ inAppPurchase
 
     $ npm install
     $ gulp watch
+
+(Does not work with node 10)
 
 ### Run tests:
 
