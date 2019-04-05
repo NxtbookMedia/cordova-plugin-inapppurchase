@@ -24,22 +24,13 @@ const nativeCall = (name, args = []) => {
   });
 };
 
-const chunkedGetSkuDetails = (productIds) => {
-  // We need to chunk the getSkuDetails call cause it is only allowed to provide a maximum of 20 items per call
-  return utils.chunk(productIds, 19).reduce((promise, productIds) => {
-    return promise.then((result) => {
-      return nativeCall('getSkuDetails', productIds).then((items) => result.concat(items));
-    });
-  }, Promise.resolve([]));
-};
-
 inAppPurchase.getProducts = (productIds) => {
   return new Promise((resolve, reject) => {
     if(!inAppPurchase.utils.validArrayOfStrings(productIds)) {
       reject(new Error(inAppPurchase.utils.errors[101]));
     } else {
       nativeCall('init', []).then(() => {
-        return chunkedGetSkuDetails(productIds);
+        return nativeCall('getSkuDetails', productIds);
       })
       .then((items) => {
         const arr = items.map((val) => {
