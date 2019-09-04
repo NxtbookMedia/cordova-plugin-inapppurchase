@@ -45,6 +45,11 @@ You can get this key from the Google Play Store (under "Services & APIs") after 
 
 All functions return a Promise.
 
+Be aware that on Android the `getProducts()`, `buy()`, `subscribe()`,
+`consume()`, and `getPurchaseHistory()` methods cannot run simultaneously with
+any of the others. Run them in series, not in parallel (unless you like reading
+error messages).
+
 ### Get Products
 
 #### inAppPurchase.getProducts(productIds)
